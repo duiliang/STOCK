@@ -17,9 +17,11 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,label,block_name,
-        company_num,avg_price,updown_rate,
-        trade_amount,trade_volume,cur_time
+        <if test="true">
+            id,label,block_name,
+            company_num,avg_price,updown_rate,
+            trade_amount,trade_volume,cur_time
+        </if>
     </sql>
 
     <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">

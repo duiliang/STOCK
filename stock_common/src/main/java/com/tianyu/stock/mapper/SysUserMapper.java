@@ -1,6 +1,7 @@
 package com.tianyu.stock.mapper;
 
 import com.tianyu.stock.pojo.entity.SysUser;
+import org.apache.ibatis.annotations.Param;
 
 /**
 * @author duiliang
@@ -22,4 +23,5 @@ public interface SysUserMapper {
 
     int updateByPrimaryKey(SysUser record);
 
+    SysUser findUserInfoByUserName(@Param("username") String username);
 }
