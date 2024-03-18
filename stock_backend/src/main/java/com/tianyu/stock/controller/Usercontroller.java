@@ -2,6 +2,9 @@ package com.tianyu.stock.controller;
 
 import com.tianyu.stock.pojo.entity.SysUser;
 import com.tianyu.stock.service.UserService;
+import com.tianyu.stock.vo.req.LoginReqVo;
+import com.tianyu.stock.vo.resp.LoginRespVo;
+import com.tianyu.stock.vo.resp.R;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 @RestController
@@ -17,5 +20,9 @@ public class Usercontroller {
     @GetMapping("/user/{username}")
     public SysUser getUserInfo(@PathVariable("username") String username) {
         return userService.findUserByName(username);
+    }
+    @PostMapping("/login")
+    public R<LoginRespVo> login(@RequestBody LoginReqVo vo){
+        return userService.login(vo);
     }
 }
