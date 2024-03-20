@@ -2,6 +2,7 @@ package com.tianyu.stock.service.impl;
 
 import cn.hutool.captcha.CaptchaUtil;
 import cn.hutool.captcha.LineCaptcha;
+import com.tianyu.stock.constant.StockConstant;
 import com.tianyu.stock.mapper.SysUserMapper;
 import com.tianyu.stock.pojo.entity.SysUser;
 import com.tianyu.stock.service.UserService;
@@ -18,6 +19,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -49,9 +51,21 @@ public class UserServiceImpl implements UserService {
     @Override
     public R<LoginRespVo> login(LoginReqVo vo) {
         // is legal?
-        if (vo == null || StringUtils.isAnyBlank(vo.getUsername(), vo.getPassword(), vo.getCode())) {
+        if (vo == null || StringUtils.isAnyBlank(vo.getUsername(), vo.getPassword())) {
             return R.error(ResponseCode.DATA_ERROR);
         }
+        if (StringUtils.isBlank(vo.getCode()) || StringUtils.isBlank(vo.getSessionId())) {
+            return R.error(ResponseCode.CHECK_CODE_ERROR);
+        }
+        //redis OK?
+        String redisCode =(String) redisTemplate.opsForValue().get(StockConstant.CHECK_PREFIX + vo.getSessionId());
+        if (StringUtils.isBlank(redisCode)) {
+            return R.error(ResponseCode.CHECK_CODE_EXPIRED);
+        }
+        if (!redisCode.equalsIgnoreCase(vo.getCode())) {
+            return R.error(ResponseCode.CHECK_CODE_ERROR);
+        }
+
         //get user decode password
         SysUser dbUser = sysUserMapper.findUserInfoByUserName(vo.getUsername());
         if (dbUser==null) {
@@ -69,15 +83,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public R<Map> getCaptchaCode() {
-        LineCaptcha lineCaptcha = CaptchaUtil.createLineCaptcha(250, 40, 4, 10);
+        LineCaptcha lineCaptcha = CaptchaUtil.createLineCaptcha(250, 40, 4, 5);
+        lineCaptcha.setBackground(Color.WHITE);
         String code = lineCaptcha.getCode();
         String imageData = lineCaptcha.getImageBase64();
         String sessionID = String.valueOf(idWorker.nextId());
-        log.info("sessionID:{}  code:{}", sessionID, code);
-        redisTemplate.opsForValue().set("CK:"+sessionID, code, 5, TimeUnit.MINUTES);
+        log.info("sessionID:{}  code:{} image:{}", sessionID, code,imageData);
+        redisTemplate.opsForValue().set(StockConstant.CHECK_PREFIX+sessionID, code, 5, TimeUnit.MINUTES);
         Map<String,String> data = new HashMap<>();
-        data.put("image", imageData);
-        data.put("sessionID", sessionID);
+        data.put("imageData", imageData);
+        data.put("sessionId", sessionID);
         return R.ok(data);
     }
 }
