@@ -7,6 +7,9 @@ import com.tianyu.stock.vo.resp.LoginRespVo;
 import com.tianyu.stock.vo.resp.R;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api")
 public class Usercontroller {
@@ -25,4 +28,10 @@ public class Usercontroller {
     public R<LoginRespVo> login(@RequestBody LoginReqVo vo){
         return userService.login(vo);
     }
+
+    @GetMapping("/captcha")
+    public R<Map> getCaptcha(){
+        return userService.getCaptchaCode();
+    }
+
 }
